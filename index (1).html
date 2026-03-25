@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samruddhi Shrawne</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0C0E;
+            --bg-elevated: #141418;
+            --bg-card: #1A1A20;
+            --accent: #D4A04A;
+            --accent-dim: rgba(212, 160, 74, 0.12);
+            --accent-glow: rgba(212, 160, 74, 0.25);
+            --text-primary: #E8E4DD;
+            --text-secondary: #8A8690;
+            --text-muted: #5A5660;
+            --border: rgba(255, 255, 255, 0.06);
+            --serif: 'DM Serif Display', Georgia, serif;
+            --sans: 'Instrument Sans', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-dim) transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--sans);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- NOISE OVERLAY ---- */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ---- GRID BACKGROUND ---- */
+        .grid-bg {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ---- CURSOR GLOW ---- */
+        .cursor-glow {
+            position: fixed;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+
+        /* ---- NAV ---- */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            background: rgba(12, 12, 14, 0.7);
+            border-bottom: 1px solid var(--border);
+            transform: translateY(-100%);
+            animation: slideDown 0.8s ease 0.3s forwards;
+        }
+
+        @keyframes slideDown {
+            to { transform: translateY(0); }
+        }
+
+        .nav-logo {
+            font-family: var(--serif);
+            font-size: 1.25rem;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        .nav-links { display: flex; gap: 2rem; }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0;
+            width: 0; height: 1px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* ---- SECTIONS ---- */
+        section { position: relative; z-index: 2; }
+
+        /* ---- HERO ---- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8rem 3rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-tag {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease 0.6s forwards;
+        }
+
+        .hero-tag span {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border: 1px solid var(--accent-dim);
+            border-radius: 100px;
+            background: var(--accent-dim);
+        }
+
+        .hero h1 {
+            font-family: var(--serif);
+            font-weight: 400;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+        }
+
+        .hero-line {
+            display: block;
+            overflow: hidden;
+        }
+
+        .hero-line-inner {
+            display: block;
+            opacity: 0;
+            transform: translateY(100%);
+            animation: revealLine 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        .hero-line:nth-child(1) .hero-line-inner { animation-delay: 0.7s; font-size: clamp(2.5rem, 6vw, 5rem); color: var(--text-primary); }
+        .hero-line:nth-child(2) .hero-line-inner { animation-delay: 0.85s; font-size: clamp(2.5rem, 6vw, 5rem); color: var(--text-secondary); }
+        .hero-line:nth-child(3) .hero-line-inner { animation-delay: 1s; font-size: clamp(2.5rem, 6vw, 5rem); }
+
+        .hero-line:nth-child(3) .hero-line-inner em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        @keyframes revealLine {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-desc {
+            max-width: 540px;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease 1.3s forwards;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease 1.5s forwards;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 2rem;
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        .btn-primary:hover {
+            background: #e0b05e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* ---- SCROLL INDICATOR ---- */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 2s forwards;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+
+        /* ---- SECTION HEADERS ---- */
+        .section-header {
+            padding: 0 3rem;
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: var(--serif);
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        /* ---- PROJECTS ---- */
+        #projects {
+            padding: 8rem 0;
+        }
+
+        .projects-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: start;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: default;
+        }
+
+        .project-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-dim) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .project-card:hover::before { opacity: 1; }
+        .project-card:hover { border-color: rgba(212, 160, 74, 0.2); transform: translateY(-4px); }
+
+        .project-number {
+            font-family: var(--serif);
+            font-size: 4rem;
+            color: var(--accent-dim);
+            line-height: 1;
+            font-style: italic;
+            position: absolute;
+            top: 2rem; right: 3rem;
+            transition: color 0.3s;
+        }
+        .project-card:hover .project-number { color: var(--accent-glow); }
+
+        .project-content { position: relative; z-index: 1; }
+
+        .project-status {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.8rem;
+            border-radius: 100px;
+            margin-bottom: 1.25rem;
+        }
+
+        .status-active {
+            color: #5AE4A7;
+            background: rgba(90, 228, 167, 0.1);
+            border: 1px solid rgba(90, 228, 167, 0.2);
+        }
+
+        .status-complete {
+            color: #7ABFFF;
+            background: rgba(122, 191, 255, 0.1);
+            border: 1px solid rgba(122, 191, 255, 0.2);
+        }
+
+        .project-title {
+            font-family: var(--serif);
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .project-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .project-tag {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .project-card:hover .project-tag {
+            color: var(--text-secondary);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* ---- ABOUT ---- */
+        #about {
+            padding: 8rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .about-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 3rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .about-text {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .about-text p + p { margin-top: 1.5rem; }
+
+        .about-text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .about-details { display: flex; flex-direction: column; gap: 2rem; }
+
+        .detail-block h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-block p, .detail-block li {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            list-style: none;
+        }
+
+        .detail-block li + li { margin-top: 0.35rem; }
+
+        .skill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .skill-pill {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.85rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* ---- EXPERIENCE TIMELINE ---- */
+        #experience {
+            padding: 8rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .timeline {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 3rem;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 3rem;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent), var(--border), transparent);
+        }
+
+        .timeline-item {
+            padding-left: 3rem;
+            position: relative;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.6s ease;
+        }
+
+        .timeline-item.visible { opacity: 1; transform: translateX(0); }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 8px;
+            width: 11px; height: 11px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-role {
+            font-family: var(--serif);
+            font-size: 1.35rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-company {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 550px;
+        }
+
+        /* ---- CONTACT ---- */
+        #contact {
+            padding: 8rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .contact-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 3rem;
+        }
+
+        .contact-inner .section-title {
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-desc {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .contact-link:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-dim);
+        }
+
+        .contact-link svg {
+            width: 18px; height: 18px;
+            fill: currentColor;
+        }
+
+        /* ---- FOOTER ---- */
+        footer {
+            padding: 2rem 3rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ---- FLOATING PARTICLES ---- */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            animation: drift linear infinite;
+        }
+
+        @keyframes drift {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { gap: 1rem; }
+            .nav-links a { font-size: 0.75rem; }
+            .hero { padding: 7rem 1.5rem 4rem; }
+            .section-header { padding: 0 1.5rem; }
+            .projects-grid { padding: 0 1.5rem; }
+            .project-card { grid-template-columns: 1fr; padding: 2rem; }
+            .project-number { position: static; font-size: 2.5rem; margin-bottom: 0.5rem; }
+            .about-grid { grid-template-columns: 1fr; padding: 0 1.5rem; }
+            .timeline { padding: 0 1.5rem; }
+            .timeline::before { left: 1.5rem; }
+            .contact-inner { padding: 0 1.5rem; }
+            footer { padding: 2rem 1.5rem; flex-direction: column; gap: 0.5rem; }
+            .hero-cta { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <div class="particles" id="particles"></div>
+
+    <nav>
+        <div class="nav-logo">S.S.</div>
+        <div class="nav-links">
+            <a href="#projects">Projects</a>
+            <a href="#experience">Experience</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-tag"><span>M.Eng. Financial Technology @ Duke</span></div>
+        <h1>
+            <span class="hero-line"><span class="hero-line-inner">Samruddhi Shrawne</span></span>
+            <span class="hero-line"><span class="hero-line-inner">Building at the edge of</span></span>
+            <span class="hero-line"><span class="hero-line-inner"><em>finance & technology.</em></span></span>
+        </h1>
+        <p class="hero-desc">
+            Product thinker with quantitative depth. Three years across WealthTech, capital markets, and regulatory technology, now exploring quantitative finance, digital assets, and trading infrastructure.
+        </p>
+        <div class="hero-cta">
+            <a href="#projects" class="btn btn-primary">View Projects ↓</a>
+            <a href="#contact" class="btn btn-outline">Get in Touch</a>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+        <div class="section-header">
+            <div class="section-label">Selected Work</div>
+            <h2 class="section-title">Projects</h2>
+        </div>
+        <div class="projects-grid">
+
+            <div class="project-card" data-animate>
+                <div class="project-content">
+                    <span class="project-status status-active">In Progress</span>
+                    <h3 class="project-title">Risk Anchor</h3>
+                    <p class="project-desc">
+                        A portfolio rebalancing tool that monitors drift against target allocations and triggers rules-based rebalancing across equity, fixed income, and alternative asset classes. Built with a transparent risk scoring engine, positioning against black-box robo-advisors through full user control and explainability.
+                    </p>
+                    <div class="project-tags">
+                        <span class="project-tag">Python</span>
+                        <span class="project-tag">Flask</span>
+                        <span class="project-tag">React</span>
+                        <span class="project-tag">Portfolio Theory</span>
+                        <span class="project-tag">Risk Management</span>
+                    </div>
+                </div>
+                <div class="project-number">01</div>
+            </div>
+
+            <div class="project-card" data-animate>
+                <div class="project-content">
+                    <span class="project-status status-active">In Progress</span>
+                    <h3 class="project-title">Cross-Commodity Momentum &amp; Term Structure Strategy</h3>
+                    <p class="project-desc">
+                        A double-sort strategy combining price momentum and futures term structure signals across commodities and macro-ETFs including gold, crude oil, copper, and natural gas. Backtesting long-short and long-only variants, deployed on Interactive Brokers paper trading with a $50M simulated portfolio.
+                    </p>
+                    <div class="project-tags">
+                        <span class="project-tag">Python</span>
+                        <span class="project-tag">pandas</span>
+                        <span class="project-tag">NumPy</span>
+                        <span class="project-tag">Interactive Brokers</span>
+                        <span class="project-tag">Momentum</span>
+                    </div>
+                </div>
+                <div class="project-number">02</div>
+            </div>
+
+            <div class="project-card" data-animate>
+                <div class="project-content">
+                    <span class="project-status status-complete">Completed</span>
+                    <h3 class="project-title">Econometric Modelling &amp; Risk Analysis</h3>
+                    <p class="project-desc">
+                        Modeled volatility dynamics on JPMorgan Chase equity returns using ARMA/GARCH frameworks with stationarity diagnostics, volatility clustering analysis, and out-of-sample return forecasting. Built a Vector Autoregression model for cross-asset transmission effects and impulse response analysis.
+                    </p>
+                    <div class="project-tags">
+                        <span class="project-tag">Python</span>
+                        <span class="project-tag">statsmodels</span>
+                        <span class="project-tag">ARMA/GARCH</span>
+                        <span class="project-tag">VAR</span>
+                        <span class="project-tag">Econometrics</span>
+                    </div>
+                </div>
+                <div class="project-number">03</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience">
+        <div class="section-header">
+            <div class="section-label">Career</div>
+            <h2 class="section-title">Experience</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item" data-animate>
+                <div class="timeline-date">Aug 2025 - Present</div>
+                <div class="timeline-role">Teaching Assistant, FinTech 502</div>
+                <div class="timeline-company">Duke University, Pratt School of Engineering</div>
+                <div class="timeline-desc">Guiding graduate teams on industry-sponsored capstone projects under Prof. John Fimbel.</div>
+            </div>
+            <div class="timeline-item" data-animate>
+                <div class="timeline-date">Jan 2024 - Jul 2025</div>
+                <div class="timeline-role">Deputy Manager, Product & Technology</div>
+                <div class="timeline-company">Bondbazaar Securities, Mumbai</div>
+                <div class="timeline-desc">Owned end-to-end product development for digital investment products spanning Mutual Funds, REITs, and InvITs. Led KYC overhaul reducing onboarding time by 25%.</div>
+            </div>
+            <div class="timeline-item" data-animate>
+                <div class="timeline-date">Oct 2022 - Dec 2023</div>
+                <div class="timeline-role">Associate Business Analyst</div>
+                <div class="timeline-company">TSS Consultancy, Mumbai</div>
+                <div class="timeline-desc">Analyzed large-scale transactional datasets across banking systems for regulatory compliance and process improvement.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+        <div class="section-header">
+            <div class="section-label">Background</div>
+            <h2 class="section-title">About Me</h2>
+        </div>
+        <div class="about-grid">
+            <div class="about-text">
+                <p>I'm a <strong>M.Eng. Financial Technology</strong> candidate at Duke's Pratt School of Engineering with a background spanning WealthTech, capital markets, and regulatory technology.</p>
+                <p>What drives me is the intersection of product thinking and quantitative depth: understanding both the user's problem and the mathematics behind the solution. I'm especially interested in <strong>quantitative finance, digital assets, and trading infrastructure.</strong></p>
+                <p>At Duke, I hold a Graduate Merit Scholarship, serve as a TA for capstone courses, and am a member of the Pratt Peers Advisory Board.</p>
+            </div>
+            <div class="about-details">
+                <div class="detail-block">
+                    <h3>Education</h3>
+                    <p>M.Eng. Financial Technology, Duke University (2025-2026)</p>
+                    <p>B.E. Electronics Engineering, CRCE Mumbai (2018-2022)</p>
+                </div>
+                <div class="detail-block">
+                    <h3>Technical</h3>
+                    <div class="skill-row">
+                        <span class="skill-pill">Python</span>
+                        <span class="skill-pill">C++</span>
+                        <span class="skill-pill">SQL</span>
+                        <span class="skill-pill">Flask</span>
+                        <span class="skill-pill">React</span>
+                        <span class="skill-pill">Git</span>
+                    </div>
+                </div>
+                <div class="detail-block">
+                    <h3>Quantitative</h3>
+                    <div class="skill-row">
+                        <span class="skill-pill">Econometrics</span>
+                        <span class="skill-pill">Time Series</span>
+                        <span class="skill-pill">Portfolio Optimization</span>
+                        <span class="skill-pill">Risk Modeling</span>
+                        <span class="skill-pill">Bond Pricing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="contact-inner">
+            <div class="section-label">Get in Touch</div>
+            <h2 class="section-title" style="font-family: var(--serif); margin-bottom: 1rem;">Let's connect.</h2>
+            <p class="contact-desc">Open to conversations about quantitative finance, product roles, research opportunities, and interesting problems at the intersection of finance and technology.</p>
+            <div class="contact-links">
+                <a href="mailto:samruddhichetan.shrawne@duke.edu" class="contact-link">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    Email
+                </a>
+                <a href="https://www.linkedin.com/in/samruddhi-shrawne/" target="_blank" class="contact-link">
+                    <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                    LinkedIn
+                </a>
+                <a href="https://github.com/Samruddhi-Chetan-Shrawne" target="_blank" class="contact-link">
+                    <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <span>&copy; 2026 Samruddhi Shrawne</span>
+        <span>Built with intention.</span>
+    </footer>
+
+    <script>
+        // ---- CURSOR GLOW ----
+        const glow = document.getElementById('cursorGlow');
+        let mouseX = 0, mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            glow.style.left = mouseX + 'px';
+            glow.style.top = mouseY + 'px';
+            glow.style.opacity = '0.15';
+        });
+
+        document.addEventListener('mouseleave', () => {
+            glow.style.opacity = '0';
+        });
+
+        // ---- PARTICLES ----
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (12 + Math.random() * 18) + 's';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
+            particlesContainer.appendChild(p);
+        }
+
+        // ---- SCROLL ANIMATIONS ----
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+
+        // ---- ACTIVE NAV ----
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const top = section.offsetTop - 200;
+                if (scrollY >= top) current = section.getAttribute('id');
+            });
+            navLinks.forEach(link => {
+                link.style.color = link.getAttribute('href') === '#' + current
+                    ? 'var(--text-primary)' : '';
+            });
+        });
+    </script>
+
+</body>
+</html>
